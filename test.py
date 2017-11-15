@@ -1,10 +1,13 @@
-a = 2048
+fitnessArray = [[2,5,0,0],
+                [0,0,0,0],
+                [0,0,0,0],
+                [0,0,0,0]]
 
-nbrDigits = 1
-power = 10
+maxArray = [0,0,0,0]
+for k in range (4) :
+    maxArray[k] = max(fitnessArray[k])
 
-while a//power > 0.5 :
-    nbrDigits+=1
-    power *= 10
+print(maxArray)
+direction = maxArray.index(max(maxArray))
 
-print(nbrDigits)
+print(direction)

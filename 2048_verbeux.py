@@ -47,7 +47,9 @@ class Grid (object) :
             if nbrNonZero == 0 : #if empty, go to next
                 #print("isEmpty")
                 continue
-            #warning : if the line is full, it can still be swiped !!
+            if nbrNonZero == 4 : #if full, go to next
+                #print("isFull")
+                continue
 
             for lineNbr in range(3, -1 + nbrNonZero, -1) :
                 if currentColumn[lineNbr] != 0 :
@@ -59,27 +61,32 @@ class Grid (object) :
 
         return False
 
-    def canSwipe (self, direction) :
-        """ returns True if swiping has an effect using canSwipeBase
-            direction = 0 up, 1 right, 2 down, 3 left
+    def canSwipeUp (self) :
+        """ returns True if swiping up has an effect
+            using canSwipeBase
         """
-        if direction == 0 :
-            return(self.canSwipeBase())
+        return(self.canSwipeBase())
 
-        elif direction == 1 :
-            rotated = np.rot90(self.grid)
-            return(Grid(rotated).canSwipeBase())
+    def canSwipeRight (self) :
+        """ returns True if swiping right has an effect
+            using canSwipeBase
+        """
+        rotated = np.rot90(self.grid)
+        return(Grid(rotated).canSwipeBase())
 
-        elif direction == 2 :
-            rotated = np.rot90(np.rot90(self.grid))
-            return(Grid(rotated).canSwipeBase())
+    def canSwipeDown (self) :
+        """ returns True if swiping down has an effect
+            using canSwipeBase
+        """
+        rotated = np.rot90(np.rot90(self.grid))
+        return(Grid(rotated).canSwipeBase())
 
-        elif direction == 3 :
-            rotated = np.rot90(np.rot90(np.rot90(self.grid)))
-            return(Grid(rotated).canSwipeBase())
-
-        else :
-            return False
+    def canSwipeLeft (self) :
+        """ returns True if swiping left has an effect
+            using canSwipeBase
+        """
+        rotated = np.rot90(np.rot90(np.rot90(self.grid)))
+        return(Grid(rotated).canSwipeBase())
 
     def swipeBase (self) :
         """ swipes the grid up, doing all the necessary additions ()
@@ -109,27 +116,32 @@ class Grid (object) :
 
         return (grid)
 
-    def swipe (self, direction) :
-        """ swipes the grid, doing all the necessary additions (uses swipeBase)
+    def swipeUp (self) :
+        """ swipes the grid up, doing all the necessary additions
+            uses swipeBase
         """
+        self.grid = self.swipeBase()
 
-        if direction == 0 :
-            self.grid = self.swipeBase()
+    def swipeRight (self) :
+        """ swipes the grid right, doing all the necessary additions
+            uses swipeBase
+        """
+        rotated = Grid(np.rot90(self.grid))
+        self.grid = np.rot90(np.rot90(np.rot90(rotated.swipeBase())))
 
-        elif direction == 1 :
-            rotated = Grid(np.rot90(self.grid))
-            self.grid = np.rot90(np.rot90(np.rot90(rotated.swipeBase())))
+    def swipeDown (self) :
+        """ swipes the grid down, doing all the necessary additions
+            uses swipeBase
+        """
+        rotated = Grid(np.rot90(np.rot90(self.grid)))
+        self.grid = np.rot90(np.rot90(rotated.swipeBase()))
 
-        elif direction == 2 :
-            rotated = Grid(np.rot90(np.rot90(self.grid)))
-            self.grid = np.rot90(np.rot90(rotated.swipeBase()))
-
-        elif direction == 3 :
-            rotated = Grid(np.rot90(np.rot90(np.rot90(self.grid))))
-            self.grid = np.rot90(rotated.swipeBase())
-
-        else :
-            pass
+    def swipeLeft (self) :
+        """ swipes the grid left, doing all the necessary additions
+            uses swipeBase
+        """
+        rotated = Grid(np.rot90(np.rot90(np.rot90(self.grid))))
+        self.grid = np.rot90(rotated.swipeBase())
 
     def addNbr (self) :
         """ adds a number on a empty space
@@ -168,11 +180,15 @@ class Grid (object) :
                         [16,  8, 4, 2],
                         [32,  16, 8, 4],
                         [64, 32, 16, 8]]
+        # fitnessArray = [[160,  80, 5, 4],
+        #                 [320,  40, 4, 3],
+        #                 [640,  20, 3, 2],
+        #                 [1280, 10, 2, 1]]
         fitness = 0
         for k in range(4) :
             for i in range (4) :
                 fitness += self.grid[k,i] * fitnessArray[k][i]
-        return (fitness / 10)
+        return (fitness / 100)
 
 ##############################################
 
@@ -186,10 +202,6 @@ arrayGrid2 = [[2, 8, 2, 2],
               [4, 2, 4, 0],
               [2, 2, 2, 2]]
 
-arrayGrid3 = [[2, 16, 4, 8],
-              [8, 4, 32, 4],
-              [64, 8, 2, 2],
-              [4, 16, 4, 4]]
 
 
 # MODE = "PLAY"
@@ -200,8 +212,8 @@ MODE = "AI"
 
 
 if MODE == "TEST" :
-    myGrid = Grid(arrayGrid3)
-    print(myGrid.canSwipe(2))
+    # myGrid = Grid(arrayGrid2)
+    # print(myGrid)
     pass
 
 
@@ -214,17 +226,17 @@ if MODE == "PLAY" :
         print(myGrid)
         print("Press key")
         user_input = input()
-        if user_input == "z" and myGrid.canSwipe(0) :
-            myGrid.swipe(0)
+        if user_input == "z" and myGrid.canSwipeUp() :
+            myGrid.swipeUp()
             myGrid.addNbr()
-        elif user_input == "s" and myGrid.canSwipe(1) :
-            myGrid.swipe(1)
+        elif user_input == "s" and myGrid.canSwipeRight() :
+            myGrid.swipeUp()
             myGrid.addNbr()
-        elif user_input == "w" and myGrid.canSwipe(2) :
-            myGrid.swipe(2)
+        elif user_input == "w" and myGrid.canSwipeDown() :
+            myGrid.swipeDown()
             myGrid.addNbr()
-        elif user_input == "q" and myGrid.canSwipe(3) :
-            myGrid.swipe(3)
+        elif user_input == "q" and myGrid.canSwipeLeft() :
+            myGrid.swipeLeft()
             myGrid.addNbr()
         else :
             pass
@@ -236,30 +248,41 @@ if MODE == "AI" :
     myGrid.addNbr()
 
     while True :
-        # print(myGrid)
-        fitnessArray = np.array([[0,0,0,0], #lignes = à 1er move constant
-                                 [0,0,0,0],
-                                 [0,0,0,0],
-                                 [0,0,0,0]])
+        print(myGrid)
+        fitnessArray = [0,0,0,0]
 
         tempGrid = Grid(myGrid.grid)
-        for k in range(4) :
-            for i in range (4) :
-                tempGrid = Grid(myGrid.grid)
-                if tempGrid.canSwipe(k) and tempGrid.canSwipe(i):
-                    tempGrid.swipe(k)
-                    tempGrid.swipe(i)
-                    fitnessArray[k][i] = (tempGrid.calcFitness())
+        if tempGrid.canSwipeUp() :
+            tempGrid.swipeUp()
+            fitnessArray[0] = tempGrid.calcFitness()
 
-        try :
-            maxArray = [0,0,0,0]
-            for k in range (4) :
-                maxArray[k] = max(fitnessArray[k])
-            direction = maxArray.index(max(maxArray)) # pas top, on pourrait voir le meilleur mais aussi ce qui peut arriver au pire, genre la meilleure moyenne
-            myGrid.swipe(direction)
-            myGrid.addNbr()
-        except :
-            print("Partie finie")
-            print(myGrid)
-            break
-        #user_input = input()
+        tempGrid = Grid(myGrid.grid)
+        if tempGrid.canSwipeRight() :
+            tempGrid.swipeRight()
+            fitnessArray[1] = tempGrid.calcFitness()
+
+        tempGrid = Grid(myGrid.grid)
+        if tempGrid.canSwipeDown() :
+            tempGrid.swipeDown()
+            fitnessArray[2] = tempGrid.calcFitness()
+
+        tempGrid = Grid(myGrid.grid)
+        if tempGrid.canSwipeLeft() :
+            tempGrid.swipeLeft()
+            fitnessArray[3] = tempGrid.calcFitness()
+
+
+        direction = fitnessArray.index(max(fitnessArray))
+        print(int(fitnessArray[0]), int(fitnessArray[1]), int(fitnessArray[2]), int(fitnessArray[3]))
+        print(direction)
+        if direction == 0 :
+            myGrid.swipeUp()
+        elif direction == 1 :
+            myGrid.swipeRight()
+        elif direction == 2 :
+            myGrid.swipeDown()
+        elif direction == 3 :
+            myGrid.swipeLeft()
+
+        myGrid.addNbr()
+        user_input = input()
