@@ -1,13 +1,10 @@
-fitnessArray = [[2,5,0,0],
-                [0,0,0,0],
-                [0,0,0,0],
-                [0,0,0,0]]
+arrayGrid3 = [[2, 16, 4, 8],
+              [8, 4, 32, 4],
+              [64, 8, 2, 2],
+              [4, 16, 4, 4]]
 
-maxArray = [0,0,0,0]
-for k in range (4) :
-    maxArray[k] = max(fitnessArray[k])
+import numpy as np
 
-print(maxArray)
-direction = maxArray.index(max(maxArray))
+toto = np.array(arrayGrid3)
 
-print(direction)
+print(np.count_nonzero(toto))
