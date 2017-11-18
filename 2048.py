@@ -161,6 +161,10 @@ class Grid (object) :
         """ Returns the fitness of the grid
 
         """
+        # fitnessArray = [[64,  16, 4, 1],  #a peu près pareil
+        #                 [256,  64, 16, 4],
+        #                 [1024,  256, 64, 16],
+        #                 [4096, 1024, 256, 64]]
         fitnessArray = [[8,  4, 2, 1],
                         [16,  8, 4, 2],
                         [32,  16, 8, 4],
@@ -207,10 +211,10 @@ def single_AI() :
     myGrid.addNbr()
 
     while True :
-        fitnessArray = np.array([[0,0,0,0], #lignes = à 1er move constant
-                                 [0,0,0,0],
-                                 [0,0,0,0],
-                                 [0,0,0,0]])
+        fitnessArray = np.array([[0, 0, 0, 0], #lignes = à 1er move constant
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0]])
 
         tempGrid = Grid(myGrid.grid)  #c'est peut être ça qui est très lent
         for k in range(4) :
@@ -234,13 +238,28 @@ def single_AI() :
             for k in range (4) :
                 maxArray[k] = max(fitnessArray[k])
                 # maxArray[k] = fitnessArray[k].mean() #moins bon que le max
+
+            #we reverse the array to make sure the default swipe is left and not up
+            reversedMaxArray = maxArray[::-1]
             direction = maxArray.index(max(maxArray))
+            if direction == 0 :
+                direction == 3
+            elif direction == 1 :
+                direction == 2
+            elif direction == 2 :
+                direction == 1
+            elif direction == 3 :
+                direction == 0
+
             myGrid.swipe(direction)
             myGrid.addNbr()
         except :
             return(myGrid.grid)
             break
-        #user_input = input()
+
+        #useful for debugging and seeing what is happening
+        # print(myGrid)
+        # user_input = input()
 
 
 ##############################################
@@ -288,7 +307,7 @@ if MODE == "AI" :
 
 if MODE == "MULTI_AI" :
     startTime = time.time()
-    nbrGames = 10
+    nbrGames = 100
     listScores = [[],[]]
     for k in range(nbrGames) :
         finishedGrid = single_AI()
@@ -304,7 +323,7 @@ if MODE == "MULTI_AI" :
     print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
     print(np.array(listScores))
     print("--------------------------")
-
-    # width = 30
-    # plt.bar(listScores[0], listScores[1], width)
-    # plt.show()
+    #plot a bar graph
+    width = 30
+    plt.bar(listScores[0], listScores[1], width)
+    plt.show()
