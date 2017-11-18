@@ -2,6 +2,7 @@
 import numpy as np
 import random
 import time
+import matplotlib.pyplot as plt
 
 # class bcolors:
 #     HEADER = '\033[95m'
@@ -191,7 +192,56 @@ arrayGrid3 = [[2, 16, 4, 8],
 # MODE = "PLAY"
 # MODE = "TEST"
 MODE = "AI"
-# MODE = "MULTI_AI"
+MODE = "MULTI_AI"
+
+##############################################
+def evaluateGrid(givenGrid) :
+    return(givenGrid.max())
+
+def single_AI() :
+    myGrid = Grid([[0, 0, 0, 0],
+                   [0, 0, 0, 0],
+                   [0, 0, 0, 0],
+                   [0, 0, 0, 0]])
+    myGrid.addNbr()
+    myGrid.addNbr()
+
+    while True :
+        fitnessArray = np.array([[0,0,0,0], #lignes = à 1er move constant
+                                 [0,0,0,0],
+                                 [0,0,0,0],
+                                 [0,0,0,0]])
+
+        tempGrid = Grid(myGrid.grid)  #c'est peut être ça qui est très lent
+        for k in range(4) :
+            for i in range (4) :
+                tempGrid = Grid(myGrid.grid)
+                if tempGrid.canSwipe(k) :
+                    tempGrid.swipe(k)
+                    if tempGrid.canSwipe(i) :
+                        tempGrid.swipe(i)
+                        fitnessArray[k][i] = tempGrid.calcFitness()
+
+        try :
+            possibleMoves = [False, False, False, False]
+            for k in range (4) :
+                possibleMoves[k] = myGrid.canSwipe(k)
+
+            if (possibleMoves[0] == True or possibleMoves[2] == True or possibleMoves[3] == True) :
+                fitnessArray[1,:] = 0
+
+            maxArray = [0,0,0,0]
+            for k in range (4) :
+                maxArray[k] = max(fitnessArray[k])
+                # maxArray[k] = fitnessArray[k].mean() #moins bon que le max
+            direction = maxArray.index(max(maxArray))
+            myGrid.swipe(direction)
+            myGrid.addNbr()
+        except :
+            return(myGrid.grid)
+            break
+        #user_input = input()
+
 
 ##############################################
 
@@ -227,78 +277,34 @@ if MODE == "PLAY" :
         print(myGrid.calcFitness())
 
 if MODE == "AI" :
-    start = time.time()
-    myGrid = Grid(arrayGrid1)
-    myGrid.addNbr()
-    myGrid.addNbr()
+    startTime = time.time()
+    finishedGrid = single_AI()
+    endTime = time.time()
+    print(" \n----- Partie finie -----")
+    print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
+    print("Valeur max :", evaluateGrid(finishedGrid))
+    print(Grid(finishedGrid))
+    print("------------------------")
 
-    while True :
-        # print(myGrid)
-        fitnessArray = np.array([[0,0,0,0], #lignes = à 1er move constant
-                                 [0,0,0,0],
-                                 [0,0,0,0],
-                                 [0,0,0,0]])
+if MODE == "MULTI_AI" :
+    startTime = time.time()
+    nbrGames = 10
+    listScores = [[],[]]
+    for k in range(nbrGames) :
+        finishedGrid = single_AI()
+        maxObtainedValue = evaluateGrid(finishedGrid)
+        if ( maxObtainedValue not in listScores[0][:]) :
+            listScores[0].append(maxObtainedValue)
+            listScores[1].append(1)
+        else :
+            listScores[1][listScores[0].index(maxObtainedValue)] += 1
+        print("Partie", k+1, "sur", nbrGames)
+    endTime = time.time()
+    print(" \n----- Parties finies -----")
+    print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
+    print(np.array(listScores))
+    print("--------------------------")
 
-        tempGrid = Grid(myGrid.grid)
-        for k in range(4) :
-            for i in range (4) :
-                tempGrid = Grid(myGrid.grid)
-                if tempGrid.canSwipe(k) and tempGrid.canSwipe(i):
-                    tempGrid.swipe(k)
-                    tempGrid.swipe(i)
-                    fitnessArray[k][i] = (tempGrid.calcFitness())
-
-        try :
-            maxArray = [0,0,0,0]
-            for k in range (4) :
-                # maxArray[k] = max(fitnessArray[k])
-                maxArray[k] = fitnessArray[k].mean()
-            direction = maxArray.index(max(maxArray)) # pas top, on pourrait voir le meilleur mais aussi ce qui peut arriver au pire, genre la meilleure moyenne
-            myGrid.swipe(direction)
-            myGrid.addNbr()
-        except :
-            print("Partie finie")
-            print(time.time()-start)
-            print(myGrid)
-            break
-        #user_input = input()
-
-
-if MODE == "MULTI_AI" : #MARCHE PAS
-    start = time.time()
-    avgMax = 0
-
-    for k in range (2) :
-        myGrid = Grid(arrayGrid1)
-        myGrid.addNbr()
-        myGrid.addNbr()
-
-        while True :
-            fitnessArray = np.array([[0,0,0,0], #lignes = à 1er move constant
-                                     [0,0,0,0],
-                                     [0,0,0,0],
-                                     [0,0,0,0]])
-
-            tempGrid = Grid(myGrid.grid)
-            for k in range(4) :
-                for i in range (4) :
-                    tempGrid = Grid(myGrid.grid)
-                    if tempGrid.canSwipe(k) and tempGrid.canSwipe(i):
-                        tempGrid.swipe(k)
-                        tempGrid.swipe(i)
-                        fitnessArray[k][i] = (tempGrid.calcFitness())
-
-            try :
-                maxArray = [0,0,0,0]
-                for k in range (4) :
-                    # maxArray[k] = max(fitnessArray[k])
-                    maxArray[k] = fitnessArray[k].mean()
-                direction = maxArray.index(max(maxArray)) # pas top, on pourrait voir le meilleur mais aussi ce qui peut arriver au pire, genre la meilleure moyenne
-                myGrid.swipe(direction)
-                myGrid.addNbr()
-            except :
-                avgMax += max(myGrid.grid)
-                break
-
-    print(time.time()-start)
-    print("Average max:", avgMax)
+    # width = 30
+    # plt.bar(listScores[0], listScores[1], width)
+    # plt.show()
