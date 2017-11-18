@@ -39,11 +39,11 @@ class Grid (object) :
             string += "\n"
         return string
 
-    def canSwipeBase (self) :
+    def canSwipeBase (self, grid) :
         """ returns True if swiping up has an effect
         """
         for columnNbr in range(4) :
-            currentColumn = self.grid[:,columnNbr]
+            currentColumn = grid[:,columnNbr]
             nbrNonZero = np.count_nonzero(currentColumn)
             if nbrNonZero == 0 : #if empty, go to next
                 #print("isEmpty")
@@ -65,28 +65,26 @@ class Grid (object) :
             direction = 0 up, 1 right, 2 down, 3 left
         """
         if direction == 0 :
-            return(self.canSwipeBase())
+            return(self.canSwipeBase(self.grid))
 
         elif direction == 1 :
             rotated = np.rot90(self.grid)
-            return(Grid(rotated).canSwipeBase())
+            return(self.canSwipeBase(rotated))
 
         elif direction == 2 :
             rotated = np.rot90(np.rot90(self.grid))
-            return(Grid(rotated).canSwipeBase())
+            return(self.canSwipeBase(rotated))
 
         elif direction == 3 :
             rotated = np.rot90(np.rot90(np.rot90(self.grid)))
-            return(Grid(rotated).canSwipeBase())
+            return(self.canSwipeBase(rotated))
 
         else :
             return False
 
-    def swipeBase (self) :
+    def swipeBase (self, grid) :
         """ swipes the grid up, doing all the necessary additions ()
         """
-        grid = self.grid
-
         #we start by putting every tile up
         for columnNbr in range(4) :
             nbrZeros = 4 - np.count_nonzero(grid[:,columnNbr])
@@ -115,19 +113,19 @@ class Grid (object) :
         """
 
         if direction == 0 :
-            self.grid = self.swipeBase()
+            self.grid = self.swipeBase(self.grid)
 
         elif direction == 1 :
-            rotated = Grid(np.rot90(self.grid))
-            self.grid = np.rot90(np.rot90(np.rot90(rotated.swipeBase())))
+            rotated = np.rot90(self.grid)
+            self.grid = np.rot90(np.rot90(np.rot90(self.swipeBase(rotated))))
 
         elif direction == 2 :
-            rotated = Grid(np.rot90(np.rot90(self.grid)))
-            self.grid = np.rot90(np.rot90(rotated.swipeBase()))
+            rotated = np.rot90(np.rot90(self.grid))
+            self.grid = np.rot90(np.rot90(self.swipeBase(rotated)))
 
         elif direction == 3 :
-            rotated = Grid(np.rot90(np.rot90(np.rot90(self.grid))))
-            self.grid = np.rot90(rotated.swipeBase())
+            rotated = np.rot90(np.rot90(np.rot90(self.grid)))
+            self.grid = np.rot90(self.swipeBase(rotated))
 
         else :
             pass
@@ -165,6 +163,7 @@ class Grid (object) :
         #                 [256,  64, 16, 4],
         #                 [1024,  256, 64, 16],
         #                 [4096, 1024, 256, 64]]
+
         fitnessArray = [[8,  4, 2, 1],
                         [16,  8, 4, 2],
                         [32,  16, 8, 4],
@@ -173,7 +172,7 @@ class Grid (object) :
         for k in range(4) :
             for i in range (4) :
                 fitness += self.grid[k,i] * fitnessArray[k][i]
-        return (fitness / 10)
+        return (fitness)
 
 ##############################################
 
@@ -305,9 +304,10 @@ if MODE == "AI" :
     print(Grid(finishedGrid))
     print("------------------------")
 
+
 if MODE == "MULTI_AI" :
     startTime = time.time()
-    nbrGames = 100
+    nbrGames = 30
     listScores = [[],[]]
     for k in range(nbrGames) :
         finishedGrid = single_AI()
