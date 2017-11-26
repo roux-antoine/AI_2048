@@ -55,7 +55,7 @@ class Grid (object) :
                     return True
 
             for lineNbr in range(0, 3) :
-                if currentColumn[lineNbr] == currentColumn[lineNbr+1] :
+                if currentColumn[lineNbr] == currentColumn[lineNbr+1] and currentColumn[lineNbr] != 0 :
                     return True
 
         return False
@@ -186,10 +186,10 @@ arrayGrid2 = [[2, 8, 2, 2],
               [4, 2, 4, 0],
               [2, 2, 2, 2]]
 
-arrayGrid3 = [[2, 16, 4, 8],
-              [8, 4, 32, 4],
-              [64, 8, 2, 2],
-              [4, 16, 4, 4]]
+arrayGrid3 = [[4, 0, 0, 0],
+              [16, 4, 2, 0],
+              [32, 2, 8, 0],
+              [128, 32, 2, 0]]
 
 
 # MODE = "PLAY"
@@ -199,6 +199,8 @@ MODE = "MULTI_AI"
 
 ##############################################
 def evaluateGrid(givenGrid) :
+    """ Returns the max value of the grid
+    """
     return(givenGrid.max())
 
 def single_AI() :
@@ -215,23 +217,33 @@ def single_AI() :
                                  [0, 0, 0, 0],
                                  [0, 0, 0, 0]])
 
-        tempGrid = Grid(myGrid.grid)  #c'est peut être ça qui est très lent
-        for k in range(4) :
-            for i in range (4) :
-                tempGrid = Grid(myGrid.grid)
-                if tempGrid.canSwipe(k) :
-                    tempGrid.swipe(k)
-                    if tempGrid.canSwipe(i) :
-                        tempGrid.swipe(i)
-                        fitnessArray[k][i] = tempGrid.calcFitness()
+        #we determine what moves to consider (not necessarily all the possible moves)
+        possibleMoves = [False, False, False, False]
+        for k in range (4) :
+            possibleMoves[k] = myGrid.canSwipe(k)
 
-        try :
-            possibleMoves = [False, False, False, False]
-            for k in range (4) :
-                possibleMoves[k] = myGrid.canSwipe(k)
+        if sum(possibleMoves) != 0 : #if at least one move is possible
 
             if (possibleMoves[0] == True or possibleMoves[2] == True or possibleMoves[3] == True) :
-                fitnessArray[1,:] = 0
+                #if can swipe up, left or down, do not swipe right
+                consideredMovesArray = [0, 2, 3]
+
+            # if np.count_nonzero(myGrid.grid[:,0]) != 0 :
+            #     #if first line is not full, do not swipe up
+            #     #PAS SUFFISANT CAR MM SI LA LIGNE EST PLEINE SWIPER PEUT AVOIR UN EFFET
+            #     #EN PLUS CA DIMINUE LE MEILLEUR SCORE...
+            #     consideredMovesArray = [2, 3]
+
+            for k in consideredMovesArray :
+                for i in range (4) :
+                    tempGrid = Grid(myGrid.grid)
+                    if tempGrid.canSwipe(k) :
+                        tempGrid.swipe(k)
+                        if tempGrid.canSwipe(i) :
+                            tempGrid.swipe(i)
+                            fitnessArray[k][i] = tempGrid.calcFitness()
+
+
 
             maxArray = [0,0,0,0]
             for k in range (4) :
@@ -240,25 +252,33 @@ def single_AI() :
 
             #we reverse the array to make sure the default swipe is left and not up
             reversedMaxArray = maxArray[::-1]
+            direction2 = reversedMaxArray.index(max(reversedMaxArray))
             direction = maxArray.index(max(maxArray))
-            if direction == 0 :
-                direction == 3
-            elif direction == 1 :
-                direction == 2
-            elif direction == 2 :
-                direction == 1
-            elif direction == 3 :
-                direction == 0
 
-            myGrid.swipe(direction)
+            if direction2 == 0 :
+                direction2 = 3
+            elif direction2 == 1 :
+                direction2 = 2
+            elif direction2 == 2 :
+                direction2 = 1
+            elif direction2 == 3 :
+                direction2 = 0
+
+            #useful for debugging and seeing what is happening:
+            # print(myGrid)
+            # print(fitnessArray)
+            # print(maxArray)
+            # print(direction2)
+            # user_input = input()
+
+            myGrid.swipe(direction2) #mettre direction pour swiper sans avoir reverse l'array
             myGrid.addNbr()
-        except :
+
+        else : #if no move is possible
             return(myGrid.grid)
             break
 
-        #useful for debugging and seeing what is happening
-        # print(myGrid)
-        # user_input = input()
+
 
 
 ##############################################
@@ -266,7 +286,7 @@ def single_AI() :
 
 if MODE == "TEST" :
     myGrid = Grid(arrayGrid3)
-    print(myGrid.canSwipe(2))
+    print(myGrid.canSwipe(3))
     pass
 
 if MODE == "PLAY" :
@@ -304,10 +324,9 @@ if MODE == "AI" :
     print(Grid(finishedGrid))
     print("------------------------")
 
-
 if MODE == "MULTI_AI" :
     startTime = time.time()
-    nbrGames = 30
+    nbrGames = 150
     listScores = [[],[]]
     for k in range(nbrGames) :
         finishedGrid = single_AI()
