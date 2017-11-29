@@ -4,24 +4,46 @@ import random
 import time
 import matplotlib.pyplot as plt
 
-# class bcolors:
-#     HEADER = '\033[95m'
-#     OKBLUE = '\033[94m'
-#     OKGREEN = '\033[92m'
-#     WARNING = '\033[93m'
-#     FAIL = '\033[91m'
-#     ENDC = '\033[0m'
-#     BOLD = '\033[1m'
-#     UNDERLINE = '\033[4m'
-# print (bcolors.OKBLUE + "Some text"
-#   + bcolors.ENDC)
+##CMA-ES
+
+# class Neuron (object) :
+#
+#     def __init__ (self) :
+#         """
+#         """
+#         self.grid = Grid()
+#
+#         for k in range (4) :
+#             for i in range (4) :
+#                 self.grid.grid[k,i] = random.randint(-10, 10)
+#
+#         self.fitnessValue = -1 #while unknown, it is set to -1
+#
+#
+#     def evaluate (self) :
+#         """ Attributes the rawScore as fitness
+#             Doesnt return anything
+#         """
+#         self.fitness = sum(sum(self.grid.grid))
+
+
+######################################   Classes   #########################################
 
 class Grid (object) :
 
-    def __init__ (self, grid) :
+    def __init__ (self, givenGrid, givenFitnessGrid) :
         """
         """
-        self.grid = np.array(grid)
+        # self.grid = np.array([[0, 0, 0, 0],
+        #                       [0, 0, 0, 0],
+        #                       [0, 0, 0, 0],
+        #                       [0, 0, 0, 0]])
+        self.grid = np.array(givenGrid)
+        # self.fitnessGrid = np.array([[8,  4, 2, 1],
+        #                                  [16,  8, 4, 2],
+        #                                  [32,  16, 8, 4],
+        #                                  [64, 32, 16, 8]])
+        self.fitnessGrid = givenFitnessGrid
 
     def __str__ (self) :
         string = ""
@@ -147,6 +169,7 @@ class Grid (object) :
 
         randomPosition = random.randint(0,emptyCounter-1)
         counter = 0
+
         for k in range (4) :
             for i in range (4) :
                 if self.grid[k,i] == 0 :
@@ -157,62 +180,171 @@ class Grid (object) :
 
     def calcFitness (self) :
         """ Returns the fitness of the grid
-
         """
-        # fitnessArray = [[64,  16, 4, 1],  #a peu près pareil
+        # fitnessGrid = [[64,  16, 4, 1],  #a peu près pareil
         #                 [256,  64, 16, 4],
         #                 [1024,  256, 64, 16],
         #                 [4096, 1024, 256, 64]]
 
-        fitnessArray = [[8,  4, 2, 1],
-                        [16,  8, 4, 2],
-                        [32,  16, 8, 4],
-                        [64, 32, 16, 8]]
-        fitness = 0
-        for k in range(4) :
-            for i in range (4) :
-                fitness += self.grid[k,i] * fitnessArray[k][i]
+        ## pas nécessairement plus lent...
+        # fitness = 0
+        # for k in range(4) :
+        #     for i in range (4) :
+        #         fitness += self.grid[k,i] * self.fitnessGrid[k][i]
+
+        fitness = sum(sum(np.multiply(self.grid, self.fitnessGrid)))
         return (fitness)
 
-##############################################
+class Generation (object) :
 
-arrayGrid1 = [[0, 0, 0, 0],
-              [0, 0, 0, 0],
-              [0, 0, 0, 0],
-              [0, 0, 0, 0]]
+    def __init__ (self, givenSizeOfPopulation) :
+        """
+        """
+        self.sizeOfPopulation = givenSizeOfPopulation
+        self.individuals = []
+        self.fitnesses = []
 
-arrayGrid2 = [[2, 8, 2, 2],
-              [2, 2, 2, 0],
-              [4, 2, 4, 0],
-              [2, 2, 2, 2]]
+        for k in range(givenSizeOfPopulation) :
+            fitnessGrid = np.array([[0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0]])
+            for i in range (4) :
+                for j in range (4) :
+                    fitnessGrid[i,j] = random.randint(0, 10)
 
-arrayGrid3 = [[4, 0, 0, 0],
-              [16, 4, 2, 0],
-              [32, 2, 8, 0],
-              [128, 32, 2, 0]]
+            self.individuals.append(Grid([[0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0]],
+                                          fitnessGrid))
+
+
+    def __str__ (self) :
+        for k in range(self.sizeOfPopulation) :
+            print(self.individuals[k])
+            # print(self.individuals[k].fitnessGrid)
+            # print("--------------")
+        return ("")
+
+    def evaluate(self, nbrIterations) :
+        """ Fills the fitnesses array
+            Doesnt return anything
+        """
+        for k in range(self.sizeOfPopulation) :
+            currentFitness = 0
+            for i in range(nbrIterations) :
+                print("k, i =", k, i)
+                finishedGrid = single_AI(self.individuals[k].grid, self.individuals[k].fitnessGrid)
+                currentFitness += sum(sum(finishedGrid))
+            self.fitnesses.append(int(currentFitness / nbrIterations))
+
+    def select (self, proportionOfBest, proportionOfOthers) :
+        """ Selects the x best individuals from the generation
+            Selects also y individuals randomly selected
+
+        """
+        assert proportionOfBest + proportionOfOthers < 1
+
+        nbrOfBest = int((self.sizeOfPopulation) * proportionOfBest)
+        nbrOfOthers = int((self.sizeOfPopulation) * proportionOfOthers)
+        indexes = []
+
+        for k in range(nbrOfBest) :
+            currentMaxIndex = self.fitnesses.index(max(self.fitnesses))
+            indexes.append(currentMaxIndex)
+            self.fitnesses[currentMaxIndex] = 0
+
+        for k in range (nbrOfOthers) :
+            randomlySelected = random.randint(0, self.sizeOfPopulation-1)
+            while randomlySelected in indexes : #if already one of the best, try again
+                randomlySelected = random.randint(0, self.sizeOfPopulation-1)
+            indexes.append(randomlySelected)
+
+        self.fitnesses = [] #we reset the fitnesses
+
+        #we delete the individuals not selected
+        for k in range(self.sizeOfPopulation) :
+            if k not in indexes :
+                self.individuals[k] = 0
+
+        return(indexes)
+
+    def mutate (self, indexes, probability) :
+        """ Mutates the selected individuals
+            indexes = indexes of the selected
+            Doesnt return anything
+        """
+        for k in indexes :
+            if random.randint(1, int(1/probability)) == 1 :
+                #in this case we add a small noise to the grid, proportional to the tile values
+                for i in range(4) :
+                    for j in range(4) :
+                        tileValue = self.individuals[k].grid[i,j]
+                        self.individuals[k].fitnessGrid[i][j] += random.randint(-0.05 * tileValue, 0.05 * tileValue) #valeurs random....
+
+    def reproduce (self, indexes) :
+        """ The reproduction phase
+            indexes = indexes of the selected
+            At the moment : randomly mates the selected to fill up the blanks -> TROP VIOLENT ??
+            Doesnt return anything
+        """
+        assert len(indexes) >= 2
+
+        numberOfMissing = self.sizeOfPopulation - len(indexes)
+        indexesOfMissing = []
+        for k in range(self.sizeOfPopulation) :
+            if k not in indexes :
+                indexesOfMissing.append(k)
+
+        for k in indexesOfMissing :
+            parent1 = random.choice(indexes)
+            parent2 = random.choice(indexes)
+            while (parent2 == parent1) :
+                parent2 = random.choice(indexes)
+
+            self.individuals[k] = Grid([[0, 0, 0, 0],
+                                          [0, 0, 0, 0],
+                                          [0, 0, 0, 0],
+                                          [0, 0, 0, 0]] ,
+
+                                          [[0, 0, 0, 0],
+                                          [0, 0, 0, 0],
+                                          [0, 0, 0, 0],
+                                          [0, 0, 0, 0]])
+            for i in range(4) :
+                for j in range(4) :
+                    self.individuals[k].fitnessGrid[i][j] = 0.5 * (self.individuals[parent1].grid[i,j] + self.individuals[parent2].grid[i,j])
+
+
+
+######################################  Variables   #########################################
+
+arrayGrid = [[0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0]]
 
 
 # MODE = "PLAY"
 # MODE = "TEST"
-MODE = "AI"
-MODE = "MULTI_AI"
+# MODE = "AI"
+# MODE = "MULTI_AI"
+MODE = "GENETIC"
 
-##############################################
+######################################  Fonctions  ##########################################
 def evaluateGrid(givenGrid) :
     """ Returns the max value of the grid
     """
     return(givenGrid.max())
 
-def single_AI() :
-    myGrid = Grid([[0, 0, 0, 0],
-                   [0, 0, 0, 0],
-                   [0, 0, 0, 0],
-                   [0, 0, 0, 0]])
+def single_AI(givenGrid, givenFitnessGrid) :
+    myGrid = Grid(givenGrid, givenFitnessGrid)
     myGrid.addNbr()
     myGrid.addNbr()
 
     while True :
-        fitnessArray = np.array([[0, 0, 0, 0], #lignes = à 1er move constant
+        fitnessGrid = np.array([[0, 0, 0, 0], #lignes = à 1er move constant
                                  [0, 0, 0, 0],
                                  [0, 0, 0, 0],
                                  [0, 0, 0, 0]])
@@ -236,19 +368,19 @@ def single_AI() :
 
             for k in consideredMovesArray :
                 for i in range (4) :
-                    tempGrid = Grid(myGrid.grid)
+                    tempGrid = Grid(myGrid.grid, myGrid.fitnessGrid)
                     if tempGrid.canSwipe(k) :
                         tempGrid.swipe(k)
                         if tempGrid.canSwipe(i) :
                             tempGrid.swipe(i)
-                            fitnessArray[k][i] = tempGrid.calcFitness()
+                            fitnessGrid[k][i] = tempGrid.calcFitness()
 
 
 
             maxArray = [0,0,0,0]
             for k in range (4) :
-                maxArray[k] = max(fitnessArray[k])
-                # maxArray[k] = fitnessArray[k].mean() #moins bon que le max
+                maxArray[k] = max(fitnessGrid[k])
+                # maxArray[k] = fitnessGrid[k].mean() #moins bon que le max
 
             #we reverse the array to make sure the default swipe is left and not up
             reversedMaxArray = maxArray[::-1]
@@ -264,9 +396,9 @@ def single_AI() :
             elif direction2 == 3 :
                 direction2 = 0
 
-            #useful for debugging and seeing what is happening:
+            ##useful for debugging and seeing what is happening:
             # print(myGrid)
-            # print(fitnessArray)
+            # print(fitnessGrid)
             # print(maxArray)
             # print(direction2)
             # user_input = input()
@@ -279,14 +411,15 @@ def single_AI() :
             break
 
 
-
-
-##############################################
+######################################   Main   ###########################################
 
 
 if MODE == "TEST" :
-    myGrid = Grid(arrayGrid3)
-    print(myGrid.canSwipe(3))
+    # myGrid = Grid(arrayGrid3)
+    # print(myGrid.canSwipe(3))
+    myGrid = Grid(arrayGrid)
+
+    print(single_AI(myGrid))
     pass
 
 if MODE == "PLAY" :
@@ -314,35 +447,49 @@ if MODE == "PLAY" :
             pass
         print(myGrid.calcFitness())
 
-if MODE == "AI" :
-    startTime = time.time()
-    finishedGrid = single_AI()
-    endTime = time.time()
-    print(" \n----- Partie finie -----")
-    print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
-    print("Valeur max :", evaluateGrid(finishedGrid))
-    print(Grid(finishedGrid))
-    print("------------------------")
+# if MODE == "AI" :
+#     startTime = time.time()
+#     finishedGrid = single_AI()
+#     endTime = time.time()
+#     print(" \n----- Partie finie -----")
+#     print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
+#     print("Valeur max :", evaluateGrid(finishedGrid))
+#     print("Score brut :", sum(sum(finishedGrid)))
+#     print(Grid(finishedGrid))
+#     print("------------------------")
 
-if MODE == "MULTI_AI" :
-    startTime = time.time()
-    nbrGames = 150
-    listScores = [[],[]]
-    for k in range(nbrGames) :
-        finishedGrid = single_AI()
-        maxObtainedValue = evaluateGrid(finishedGrid)
-        if ( maxObtainedValue not in listScores[0][:]) :
-            listScores[0].append(maxObtainedValue)
-            listScores[1].append(1)
-        else :
-            listScores[1][listScores[0].index(maxObtainedValue)] += 1
-        print("Partie", k+1, "sur", nbrGames)
-    endTime = time.time()
-    print(" \n----- Parties finies -----")
-    print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
-    print(np.array(listScores))
-    print("--------------------------")
-    #plot a bar graph
-    width = 30
-    plt.bar(listScores[0], listScores[1], width)
-    plt.show()
+# if MODE == "MULTI_AI" :
+#     startTime = time.time()
+#     nbrGames = 10
+#     listScores = [[],[]]
+#     sumRawScores = 0
+#     for k in range(nbrGames) :
+#         finishedGrid = single_AI()
+#         sumRawScores += sum(sum(finishedGrid))
+#         maxObtainedValue = evaluateGrid(finishedGrid)
+#         if (maxObtainedValue not in listScores[0][:]) :
+#             listScores[0].append(maxObtainedValue)
+#             listScores[1].append(1)
+#         else :
+#             listScores[1][listScores[0].index(maxObtainedValue)] += 1
+#         print("Partie", k+1, "sur", nbrGames, " -  Score brut :", rawScore)
+#     endTime = time.time()
+#     print(" \n----- Parties finies -----")
+#     print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
+#     print(np.array(listScores))
+#     print("Temps par unité :", (endTime-startTime)/sumRawScores*1000, "ms")
+#     print("--------------------------")
+#     #plot a bar graph
+#     width = 30
+#     plt.bar(listScores[0], listScores[1], width)
+#     plt.show()
+
+if MODE == "GENETIC" :
+
+    myGeneration = Generation(10)
+    myGeneration.evaluate(10)
+    indexes = myGeneration.select(0.3, 0)
+    print(indexes)
+    print(myGeneration)
+    myGeneration. reproduce(indexes)
+    print(myGeneration)
