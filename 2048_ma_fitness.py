@@ -159,15 +159,22 @@ class Grid (object) :
         """ Returns the fitness of the grid
 
         """
-        # fitnessArray = [[64,  16, 4, 1],  #a peu près pareil
-        #                 [256,  64, 16, 4],
-        #                 [1024,  256, 64, 16],
-        #                 [4096, 1024, 256, 64]]
 
         fitnessArray = np.array([[8,  4, 2, 1],
-                                 [16,  8, 4, 2],
-                                 [32,  16, 8, 4],
-                                 [64, 32, 16, 8]])
+                                [16,  8, 4, 2],
+                                [32,  16, 8, 4],
+                                [64, 32, 16, 8]])
+
+        # fitnessArray = np.array([[3,  5, 6, 2], #celui du test 2
+        #                          [1,  2, 7, 5],
+        #                          [2,  3, 6, 6],
+        #                          [5, 5, 4, 1]])
+
+        # fitnessArray = np.array([[11,  20, 6, 21],   #celui du test sur les ordis de l'ensta
+        #                          [13,  4, 22, 17],
+        #                          [7,  13, 23, 25],
+        #                          [12, 5, 23, 9]])
+
 
         ## pas nécessairement plus lent...
         # fitness = 0
@@ -235,7 +242,7 @@ def single_AI() :
             # if np.count_nonzero(myGrid.grid[:,0]) != 0 :
             #     #if first line is not full, do not swipe up
             #     #PAS SUFFISANT CAR MM SI LA LIGNE EST PLEINE SWIPER PEUT AVOIR UN EFFET
-            #     #EN PLUS CA DIMINUE LE MEILLEUR SCORE...
+            #     #EN PLUS CA DIMINUE LE MEILLEUR SCORE car il fait alors un pur escalier
             #     consideredMovesArray = [2, 3]
 
             for k in consideredMovesArray :
@@ -320,17 +327,17 @@ if MODE == "PLAY" :
 
 if MODE == "AI" :
     startTime = time.time()
-    finishedGrid = single_AI()
+    [finishedGrid, rawScore] = single_AI()
     endTime = time.time()
     print(" \n----- Partie finie -----")
     print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
-    print("Valeur max :", evaluateGrid(finishedGrid))
+    # print("Valeur max :", evaluateGrid(finishedGrid))
     print(Grid(finishedGrid))
     print("------------------------")
 
 if MODE == "MULTI_AI" :
     startTime = time.time()
-    nbrGames = 10
+    nbrGames = 200
     listScores = [[],[]]
     sumRawScores = 0
     for k in range(nbrGames) :
