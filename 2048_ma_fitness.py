@@ -203,10 +203,10 @@ arrayGrid3 = [[4, 0, 0, 0],
               [128, 32, 2, 0]]
 
 
-# MODE = "PLAY"
+MODE = "PLAY"
 # MODE = "TEST"
 MODE = "AI"
-MODE = "MULTI_AI"
+# MODE = "MULTI_AI"
 
 ##############################################
 def evaluateGrid(givenGrid) :

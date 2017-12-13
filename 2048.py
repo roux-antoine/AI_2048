@@ -487,10 +487,11 @@ if MODE == "PLAY" :
 #     plt.show()
 
 if MODE == "GENETIC" :
-    nbrOfIndividuals = 30
+    nbrOfIndividuals = 20
     nbrOfGenerations = 15
-    nbrOfEvaluations = 100
-    initValue = 30
+    nbrOfEvaluations = 10
+    initValue = 10
+    selectionRate = 0.2
 
     myGeneration = Generation(nbrOfIndividuals, initValue)
     generationCounter = 0
@@ -498,12 +499,13 @@ if MODE == "GENETIC" :
         generationCounter += 1
         print(generationCounter)
 
-        if generationCounter < 5 :
-            selectionRate = 0.5
-        elif generationCounter < 10:
-            selectionRate = 0.35
-        else :
-            selectionRate = 0.2
+        # if generationCounter < 5 :
+        #     selectionRate = 0.5
+        # elif generationCounter < 10:
+        #     selectionRate = 0.35
+        # else :
+        #     selectionRate = 0.2
+
         myGeneration.evaluate(nbrOfEvaluations)
         indexes = myGeneration.select(selectionRate, 0)
         print(indexes)
