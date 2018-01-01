@@ -160,10 +160,16 @@ class Grid (object) :
 
         """
 
-        fitnessArray = np.array([[8,  4, 2, 1],
-                                [16,  8, 4, 2],
-                                [32,  16, 8, 4],
-                                [64, 32, 16, 8]])
+        # fitnessArray = np.array([[8,  4, 2, 1],
+        #                         [16,  8, 4, 2],
+        #                         [32,  16, 8, 4],
+        #                         [64, 32, 16, 8]])
+
+        fitnessArray = np.array([[13,  12, 5, 4],
+                                [14,  11, 6, 3],
+                                [15,  10,7, 2],
+                                [16, 9, 8, 1]])
+
 
         # fitnessArray = np.array([[3,  5, 6, 2], #celui du test 2
         #                          [1,  2, 7, 5],
@@ -192,21 +198,21 @@ arrayGrid1 = [[0, 0, 0, 0],
               [0, 0, 0, 0],
               [0, 0, 0, 0]]
 
-arrayGrid2 = [[2, 8, 2, 2],
-              [2, 2, 2, 0],
-              [4, 2, 4, 0],
-              [2, 2, 2, 2]]
+# arrayGrid2 = [[2, 8, 2, 2],
+#               [2, 2, 2, 0],
+#               [4, 2, 4, 0],
+#               [2, 2, 2, 2]]
+#
+# arrayGrid3 = [[4, 0, 0, 0],
+#               [16, 4, 2, 0],
+#               [32, 2, 8, 0],
+#               [128, 32, 2, 0]]
 
-arrayGrid3 = [[4, 0, 0, 0],
-              [16, 4, 2, 0],
-              [32, 2, 8, 0],
-              [128, 32, 2, 0]]
 
-
-MODE = "PLAY"
+# MODE = "PLAY"
 # MODE = "TEST"
-MODE = "AI"
-# MODE = "MULTI_AI"
+# MODE = "AI"
+MODE = "MULTI_AI"
 
 ##############################################
 def evaluateGrid(givenGrid) :
@@ -275,11 +281,11 @@ def single_AI() :
             elif direction2 == 3 :
                 direction2 = 0
 
-            ##useful for debugging and seeing what is happening:
+            # # #useful for debugging and seeing what is happening:
             # print(myGrid)
-            # print(fitnessArray)
-            # print(maxArray)
-            # print(direction2)
+            # # print(fitnessArray)
+            # # print(maxArray)
+            # # print(direction2)
             # user_input = input()
 
             myGrid.swipe(direction2) #mettre direction pour swiper sans avoir reverse l'array
@@ -330,14 +336,14 @@ if MODE == "AI" :
     [finishedGrid, rawScore] = single_AI()
     endTime = time.time()
     print(" \n----- Partie finie -----")
-    print("Temps écoulé :", int((endTime-startTime)*1000), "ms")
+    print("Temps écoulé :", int((endTime-startTime)*1000), "ms \n")
     # print("Valeur max :", evaluateGrid(finishedGrid))
     print(Grid(finishedGrid))
     print("------------------------")
 
 if MODE == "MULTI_AI" :
     startTime = time.time()
-    nbrGames = 200
+    nbrGames = 1000
     listScores = [[],[]]
     sumRawScores = 0
     for k in range(nbrGames) :
